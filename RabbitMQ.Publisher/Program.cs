@@ -12,18 +12,21 @@ using IConnection connection = factory.CreateConnection();
 using IModel channel = connection.CreateModel();
 
 // Creating Queue
-channel.QueueDeclare(queue: "first-queue", exclusive: false);
+channel.QueueDeclare(queue: "first-queue", exclusive: false, durable: true);
 
 // Sending Message to Queue
 
 //byte[] message = Encoding.UTF8.GetBytes("Hello, World!");
 //channel.BasicPublish(exchange: "", routingKey: "first-queue", body: message);
 
-for (int i = 0; i < 100; i++)
+IBasicProperties properties = channel.CreateBasicProperties();
+properties.Persistent = true;
+
+for (int i = 0; i < 1000; i++)
 {
-    await Task.Delay(100);
+    await Task.Delay(200);
     byte[] message = Encoding.UTF8.GetBytes($"Hello, World! {i}");
-    channel.BasicPublish(exchange: "", routingKey: "first-queue", body: message);
+    channel.BasicPublish(exchange: "", routingKey: "first-queue", body: message, basicProperties: properties);
 }
 
 Console.ReadLine();

@@ -12,8 +12,11 @@ ConnectionFactory factory = new()
 using IConnection connection = factory.CreateConnection();
 using IModel channel = connection.CreateModel();
 
+// Configuring Consumer
+channel.BasicQos(prefetchSize: 0, prefetchCount: 1, global: false);
+
 // Creating Queue
-channel.QueueDeclare(queue: "first-queue", exclusive: false);
+channel.QueueDeclare(queue: "first-queue", exclusive: false, durable: true);
 
 // Read Message(s) from Queue
 EventingBasicConsumer consumer = new(channel);
@@ -25,6 +28,8 @@ consumer.Received += (sender, e) =>
     // e.Body.Span or e.Body.ToArray(): These methods are provides the byte data from queue to us.
     
     Console.WriteLine(Encoding.UTF8.GetString(e.Body.Span));
+
+    channel.BasicAck(deliveryTag: e.DeliveryTag, multiple: false); // Message Acknowledgement
 };
 
 Console.ReadLine();
