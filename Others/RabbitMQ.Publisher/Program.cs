@@ -11,21 +11,47 @@ ConnectionFactory factory = new()
 using IConnection connection = factory.CreateConnection();
 using IModel channel = connection.CreateModel();
 
-// Exchange Declare - Direct
-channel.ExchangeDeclare(exchange: "direct-exchange-example", type: ExchangeType.Direct);
+#region Exchanges
 
-while (true)
+#region Direct Exchange
+
+//// Exchange Declare - Direct
+//channel.ExchangeDeclare(exchange: "direct-exchange-example", type: ExchangeType.Direct);
+
+//while (true)
+//{
+//    Console.Write("Mesaj: ");
+//    string message = Console.ReadLine();
+//    byte[] byteMessage = Encoding.UTF8.GetBytes(message);
+
+//    channel.BasicPublish(
+//        exchange: "direct-exchange-example", 
+//        routingKey: "direct-queue-example",
+//        body: byteMessage);
+//}
+
+#endregion
+
+#region Fanout Exchange
+
+channel.ExchangeDeclare(
+    exchange: "fanout-exchange-example",
+    type: ExchangeType.Fanout);
+
+for (int i = 0; i < 100; i++)
 {
-    Console.Write("Mesaj: ");
-    string message = Console.ReadLine();
-    byte[] byteMessage = Encoding.UTF8.GetBytes(message);
+    await Task.Delay(200);
+    byte[] message = Encoding.UTF8.GetBytes($"Merhaba {i}");
 
     channel.BasicPublish(
-        exchange: "direct-exchange-example", 
-        routingKey: "direct-queue-example",
-        body: byteMessage);
+        exchange: "fanout-exchange-example",
+        routingKey: string.Empty,
+        body: message);
 }
 
+#endregion
+
+#endregion
 
 #region Advanced Queue
 //// Creating Queue
